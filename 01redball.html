@@ -1,0 +1,100 @@
+
+<!DOCTYPE html>
+
+<html>
+
+    <head>
+        <title>Cannon Ball</title>
+    </head>
+
+    <body>
+
+        <!-- canvas 创建一个画布，边框粗度为2px-->
+        <canvas id="myCanvas" style="border: 2px solid;"></canvas> 
+
+        <script>
+
+            // canvas 初始化
+            
+            var canvas = document.getElementById("myCanvas");
+            var c = canvas.getContext("2d");
+
+            canvas.width = window.innerWidth - 20;
+            canvas.height = window.innerHeight - 100;
+
+            // 在浏览器中，画布的（0，0）点在左上角，而物理上在左下角。
+            // 我们要做的是将画布与物理世界进行映射
+            var simMinWidth = 20.0; // 定义画布最小宽度
+            var cScale = Math.min(canvas.width, canvas.height) / simMinWidth; // 画布缩放因子
+            var simWidth = canvas.width / cScale;
+            var simHeight = canvas.height / cScale;
+
+            function cX(pos){
+                return pos.x * cScale;
+            }
+
+            function cY(pos){
+                return canvas.height - pos.y * cScale;
+            }
+
+            // scene
+
+            var gravity = { x : 0.0, y : -9.8};
+            var timeStep = 1.0 / 60.0;
+
+            var ball = {
+                radius : 0.2,
+                pos : {x : 0.2, y : 0.2},
+                vel : {x : 10.0, y : 15.0}
+            };
+
+
+            // drawing
+            function draw(){
+                c.clearRect(0, 0, canvas.width, canvas.height); // 清除画布
+
+                c.fillStyle = "#FF0000"; // 红色
+
+                c.beginPath();
+                c.arc(
+                    cX(ball.pos), cY(ball.pos), cScale * ball.radius, 0.0, 2.0 * Math.PI); // 映射函数，将物理坐标映射到画布坐标
+                c.closePath();
+                c.fill();
+            }
+
+            // simulation
+            function simulate(){
+
+                ball.vel.x += gravity.x * timeStep;
+                ball.vel.y += gravity.y * timeStep;
+                ball.pos.x += ball.vel.x * timeStep;
+                ball.pos.y += ball.vel.y * timeStep;
+
+                if(ball.pos.x < 0.0){
+                    ball.pos.x = 0.0;
+                    ball.vel.x = -ball.vel.x;
+                }
+                if(ball.pos.x > simWidth){
+                    ball.pos.x = simWidth;
+                    ball.vel.x = -ball.vel.x;
+                }
+                if(ball.pos.y < 0.0){
+                    ball.pos.y = 0.0;
+                    ball.vel.y = -ball.vel.y;
+                }
+            }
+
+            //make browser to call us repeatedly
+            function update(){
+                simulate();
+                draw();
+                requestAnimationFrame(update); // 反复调用update函数
+            }
+
+            update(); // 一开始只会允许该函数
+
+        </script>
+
+    </body>
+
+</html>
